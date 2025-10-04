@@ -1,28 +1,44 @@
+// src/controllers/authController.js
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { generateToken } from "../utils/generateToken.js";
+import { signJwt } from "../utils/jwt.js";
 
-export const register = async (req, res, next) => {
-  try {
-    const { email, password, displayName } = req.body;
-    const exists = await User.findOne({ email });
-    if (exists) return res.status(409).json({ message: "Email already registered" });
+// KESİNLİKLE: Bu dosyada KENDİSİNİ import ETME!
+// import authController from "../controllers/authController.js";  <-- BUNU SİL
 
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = await User.create({ email, passwordHash, displayName });
-    const token = generateToken(user);
-    res.status(201).json({ token, user: { id: user._id, email, displayName } });
-  } catch (e) { next(e); }
-};
+export async function register(req, res) {
+  const { name, email, password } = req.body;
 
-export const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
-    const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.passwordHash)))
-      return res.status(401).json({ message: "Invalid credentials" });
+  const exists = await User.findOne({ email });
+  if (exists) return res.status(409).json({ message: "Email already in use" });
 
-    const token = generateToken(user);
-    res.json({ token, user: { id: user._id, email, displayName: user.displayName } });
-  } catch (e) { next(e); }
-};
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = await User.create({ name, email, passwordHash });
+
+  const token = signJwt({ id: user._id, email: user.email });
+  return res.status(201).json({
+    user: { id: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl },
+    token,
+  });
+}
+
+export async function login(req, res) {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(401).json({ message: "Invalid credentials" });
+
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) return res.status(401).json({ message: "Invalid credentials" });
+
+  const token = signJwt({ id: user._id, email: user.email });
+  return res.json({
+    user: { id: user._id, name: user.name, email: user.email, avatarUrl: user.avatarUrl },
+    token,
+  });
+}
+
+export async function me(req, res) {
+  const user = await User.findById(req.user.id).select("-passwordHash");
+  return res.json({ user });
+}
