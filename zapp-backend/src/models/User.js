@@ -2,15 +2,12 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    email: { type: String, unique: true, required: true, lowercase: true },
+    name: { type: String, trim: true, required: true, minlength: 2, maxlength: 50 },
+    email: { type: String, required: true, unique: true, lowercase: true, index: true },
     passwordHash: { type: String, required: true },
-    displayName: { type: String, required: true },
-    avatarUrl: String,
-    roles: { type: [String], default: ["user"] },
-    lastSeenAt: Date,
+    avatarUrl: { type: String, default: "" }
   },
   { timestamps: true }
 );
 
 export default mongoose.model("User", userSchema);
-

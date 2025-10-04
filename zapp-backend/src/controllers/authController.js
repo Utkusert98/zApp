@@ -1,10 +1,6 @@
-// src/controllers/authController.js
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import { signJwt } from "../utils/jwt.js";
-
-// KESİNLİKLE: Bu dosyada KENDİSİNİ import ETME!
-// import authController from "../controllers/authController.js";  <-- BUNU SİL
 
 export async function register(req, res) {
   const { name, email, password } = req.body;
@@ -24,7 +20,6 @@ export async function register(req, res) {
 
 export async function login(req, res) {
   const { email, password } = req.body;
-
   const user = await User.findOne({ email });
   if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
@@ -40,5 +35,6 @@ export async function login(req, res) {
 
 export async function me(req, res) {
   const user = await User.findById(req.user.id).select("-passwordHash");
+  if (!user) return res.status(404).json({ message: "User not found" });
   return res.json({ user });
 }

@@ -1,4 +1,8 @@
-export const errorHandler = (err, _req, res, _next) => {
-  console.error("Error:", err);
-  res.status(err.status || 500).json({ message: err.message || "Server error" });
-};
+export function errorHandler(err, req, res, next) {
+  const status = err.status || 500;
+  const message = err.message || "Internal Server Error";
+  if (process.env.NODE_ENV !== "test") {
+    console.error("Error:", status, message);
+  }
+  res.status(status).json({ message });
+}

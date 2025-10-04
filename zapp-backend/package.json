@@ -10,8 +10,9 @@
     "start": "node src/server.js"
   },
   "repository": {
-    "type": "module",
-    "url": "git+https://github.com/Utkusert98/zApp.git"
+    "type": "git",
+    "url": "git+https://github.com/Utkusert98/zApp.git",
+    "directory": "zapp-backend"
   },
   "keywords": [],
   "author": "",
